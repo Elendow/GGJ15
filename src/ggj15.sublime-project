@@ -1,0 +1,16 @@
+{
+	"folders":
+    [
+        {
+        	"name": "HTML",
+        	"path": "/",
+        	"folder_exclude_patterns": [""],
+        	"file_exclude_patterns": ["*sublime*"]
+        },
+        {
+        	"name": "JAVASCRIPT",
+            "path": "js",
+            "file_exclude_patterns": ["phaser.min.js"]
+        }
+    ]
+}
