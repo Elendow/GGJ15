@@ -14,21 +14,22 @@ function GridCell (id){
 }
 
 function Person (health, sprite, cell){
-	this.health 		= health;
 	this.sprite 		= sprite;
 	this.cell 			= cell;
 	this.movements 		= 3;
 	this.maxMovements 	= this.movements;
 }
 
-function Soldat (health, damage, sprite){
-	this.health = health;
-	this.sprite = sprite;
-	this.damage = damage;
+function Cop (health, damage, sprite){
+	this.sprite 		= sprite;
+	this.damage 		= damage;
+	this.movements 		= 3;
+	this.maxMovements 	= this.movements;
 }
 
 function Alien (health, damage, sprite){
-	this.health = health;
-	this.sprite = sprite;
-	this.damage = damage;
+	this.sprite 		= sprite;
+	this.damage 		= damage;
+	this.movements 		= 3;
+	this.maxMovements 	= this.movements;
 }

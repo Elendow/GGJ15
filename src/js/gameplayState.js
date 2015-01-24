@@ -11,7 +11,9 @@ var board;
 var boardInfo;
 var maxCells        = 30;
 var canUseCell      = true;
+var turnNum         = 0;
 var clicked;
+var unitSelection;
 
 // Camera and drag variables
 var dragX           = -1;
@@ -24,14 +26,15 @@ var turnTime        = 2500;
 var turnElapsedTime = 99999;
 var timeBar;
 var timeFill;
+var turnText;
 var hud;
 
 // Chacaters variables
-var people      = [];
-var soldats     = [];
-var aliens      = [];
+var people      = [100];
+var cops        = [100];
+var aliens      = [100];
 var peopleGrp;
-var soldatsGrp;
+var copsGrp;
 var aliensGrp;
 var roomSelected;
 
@@ -45,20 +48,16 @@ var GameplayState = {
 
         game.load.image('timeBar'   , 'assets/gui/timeBar.png');
         game.load.image('hud'       , 'assets/gui/hud.png');
-
         game.load.image('bg'        , 'assets/background.png');
 
-        game.load.spritesheet("pj"  , 'assets/nino1_spritesheet.png', 23, 40, 9);
-        game.load.spritesheet("cop" , 'assets/police_spritesheet.png', 23, 40, 9);
+        game.load.spritesheet("pj"      , 'assets/nino1_spritesheet.png', 23, 40, 9);
+        game.load.spritesheet("cop"     , 'assets/police_spritesheet.png', 23, 40, 9);
+        game.load.spritesheet("alien"   , 'assets/alien.png', 27, 51, 3);
 
         game.load.bitmapFont('PixelFont','assets/font/font.png', 'assets/font/font.fnt');
     },
 
     create: function() {
-
-        // Create font style
-        style = { font: "50px PixelFont", fill: "#ffffff", align: "left" };
-
         // Physics
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
@@ -108,9 +107,9 @@ var GameplayState = {
         }
 
         // Prepare characters groups
-        peopleGrp                               = game.add.group();
-        soldatsGrp                              = game.add.group();
-        aliensGrp                               = game.add.group();
+        peopleGrp   = game.add.group();
+        copsGrp     = game.add.group();
+        aliensGrp   = game.add.group();
 
         // Create GUI
         this.drawUI();
@@ -147,13 +146,17 @@ var GameplayState = {
                 timeFill.scale.x = 1;
                 canUseCell          = true;
                 highlight           = true;
-                timeFill.tint       = 0xACD372 
+                timeFill.tint       = 0xACD372;
             }
         }
 
         // Detect click
         if(clicked != null) 
             this.addCellOnClick();
+
+        turnText.setText("Turn " + turnNum);
+
+        board.update();
     },
 
     drag: function(){
@@ -208,7 +211,44 @@ var GameplayState = {
 
         if(roomSelected == null){
             roomSelected = e;
-            boardInfo[cellX][cellY].sprite.tint = 0xb6b6ff
+
+            // Character recount
+            var ppl;
+            var cop;
+            for(var i = 0; i < people.length; i++){
+                if(people[i].cell.x == cellX && people[i].cell.y == cellY && people[i].movements >= 0)
+                    ppl++; 
+            }
+            for(var i = 0; i < cops.length; i++){
+                if(cops[i].cell.x == cellX && cops[i].cell.y == cellY && cops[i].movements >= 0)
+                    cop++; 
+            }
+
+            // Change color logic
+            if(boardInfo[cellX][cellY].sprite.tint == 0xffffff){
+                // Change color to major population
+                if(ppl == 0 && cop == 0){
+                    roomSelected = null;
+                } else if(cop > ppl){
+                    boardInfo[cellX][cellY].sprite.tint = 0xb6b6ff;
+                    unitSelection = "cop";
+                } else {
+                    boardInfo[cellX][cellY].sprite.tint = 0xffb6b6;
+                    unitSelection = "ppl";
+                }
+            } else {
+                // Change to the other color
+                switch(boardInfo[cellX][cellY].sprite.tint){
+                    case 0xb6b6ff: 
+                        boardInfo[cellX][cellY].sprite.tint = 0xffb6b6;
+                        unitSelection = "ppl";
+                        break;
+                    case 0xffb6b6: 
+                        boardInfo[cellX][cellY].sprite.tint = 0xb6b6ff;
+                        unitSelection = "cop";
+                        break;
+                }
+            }
         } else {
             var lastCellX = Math.trunc(roomSelected.x / cellSize);
             var lastCellY = Math.trunc(roomSelected.y / cellSize);
@@ -218,9 +258,11 @@ var GameplayState = {
                     this.movePeople(roomSelected, e);
                 }
                 this.resetSelection(); 
+                unitSelection = "";
             } else {
                 roomSelected = e;
                 boardInfo[cellX][cellY].sprite.tint = 0xffffff;
+                unitSelection = "";
             }
         }
     },
@@ -247,13 +289,12 @@ var GameplayState = {
     },
 
     movePeople: function(cellFrom, cellTo){
-        var cellFromX = Math.trunc(cellFrom.x / cellSize);
-        var cellFromY = Math.trunc(cellFrom.y / cellSize);
-        var cellToX = Math.trunc(cellTo.x / cellSize);
-        var cellToY = Math.trunc(cellTo.y / cellSize);
+        var cellFromX   = Math.trunc(cellFrom.x / cellSize);
+        var cellFromY   = Math.trunc(cellFrom.y / cellSize);
+        var cellToX     = Math.trunc(cellTo.x / cellSize);
+        var cellToY     = Math.trunc(cellTo.y / cellSize);
 
         for(var i = 0; i < people.length; i++){
-            console.log("P: " + people[i].cell.x  + "," + people[i].cell.y);
             if(people[i].cell.x == cellFromX && people[i].cell.y == cellFromY && people[i].movements >= 0){  
                 if(cellTo.x > cellFrom.x){
                     people[i].sprite.animations.play('right');
@@ -284,9 +325,9 @@ var GameplayState = {
 
     addCellOnClick: function(){
        if(!draggin){
-            var cellX = Math.trunc(clicked.x / cellSize);
-            var cellY = Math.trunc(clicked.y / cellSize);
-            var canPut = false;
+            var cellX   = Math.trunc(clicked.x / cellSize);
+            var cellY   = Math.trunc(clicked.y / cellSize);
+            var canPut  = false;
             if(canUseCell){
                 if(!boardInfo[cellX][cellY].used){
                     for(var i = cellX - 1; i < cellX + 2; i++){
@@ -305,7 +346,21 @@ var GameplayState = {
                 if(canPut){
                     if(roomSelected != null)
                         this.resetSelection();
-                    this.putCell(clicked.x, clicked.y);
+                    var cell = this.putCell(clicked.x, clicked.y);
+
+                    // Let's summon some things  
+                    var rand = game.rnd.integerInRange(0,101);
+
+                    if(rand < 100){
+                        // Tripulants!
+                        this.addPeople(cell);
+                    }
+                    else if (rand < 40){
+                        // Cops!
+                    }
+                    else if (rand < 60){
+                        // Aliens!
+                    }
                 } 
             }
             clicked = null;
@@ -331,15 +386,26 @@ var GameplayState = {
         gridInfo[cellX][cellY].sprite.tint  = 0x1ABBB4;
         this.highlightCells();
 
+        // Prepare new cell inputs
         cell.inputEnabled = true;
         cell.events.onInputOver.add(this.roomOver, this);
         cell.events.onInputOut.add(this.roomOut, this);
         cell.events.onInputDown.add(this.roomClick, this);
 
+        // Reset character movements
         for(var i = 0; i < people.length; i++){
             people[i].movements = people[i].maxMovements;
         }
 
+        for(var i = 0; i < cops.length; i++){
+            cops[i].movements   = cops[i].maxMovements;
+        }
+
+        for(var i = 0; i < aliens.length; i++){
+            aliens[i].movements = aliens[i].maxMovements;
+        }
+
+        turnNum++;
         return boardInfo[cellX][cellY];
     },
 
@@ -368,25 +434,34 @@ var GameplayState = {
         timeBar                 = game.add.sprite(56, 3, 'timeBar');
         timeFill                = game.add.sprite(56, 3, 'timeBar');
         hud                     = game.add.sprite(0, 0, 'hud');
+        turnText                = game.add.bitmapText(80, 6, 'PixelFont','Turn '+ turnNum,13);
         timeBar.fixedToCamera   = true;
         timeFill.fixedToCamera  = true;
         hud.fixedToCamera       = true;
         bg.fixedToCamera        = true;
+        turnText.fixedToCamera  = true;
         timeBar.tint            = 0x232324;
-        timeFill.tint           = 0xf0f28b;
-
-        turn = game.add.bitmapText(80, 6, 'PixelFont','Turn',13);
-        turn.fixedToCamera      = true;
+        timeFill.tint           = 0xf0f28b;        
     },
 
     addPeople: function(cell){
-        for(var i = 1; i < game.rnd.integerInRange(2,4); i++){
+        var rnd = game.rnd.integerInRange(2,4);
+        for(var i = 1; i < rnd; i++){
             var sprite = peopleGrp.create((cell.x * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2) , (cell.y * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2), 'pj');
-            people.push(new Person(20, sprite, cell));
+            var person = new Person(20, sprite, cell);
+            people.push(person);
             sprite.animations.add('idle',   [0, 1, 2]   ,  5, true);
             sprite.animations.add('right',  [3, 4, 3, 5], 10, true);
             sprite.animations.add('left',   [6, 7, 6, 8], 10, true);
             sprite.animations.play('idle');
         }
+    },
+
+    addAliens: function(cell){
+
+    },
+
+    addCops: function(cell){
+
     },
 };
