@@ -1,5 +1,6 @@
 // Grid variables
 var grid;
+var gridInfo;
 var gridOffset      = 50;
 var gridX           = 10;
 var gridY           = 8;
@@ -9,7 +10,7 @@ var cellSize        = 192;
 var board;
 var boardInfo;
 var maxCells        = 30;
-var canUseCell      = false;
+var canUseCell      = true;
 
 // Camera and drag variables
 var dragX           = -1;
@@ -18,19 +19,21 @@ var draggin         = false;
 var cameraSpeed     = 15;
 
 // GUI variables
-var turnTime        = 1000;   // Seconds
-var turnElapsedTime = 0;    // Seconds
+var turnTime        = 5000;
+var turnElapsedTime = 99999;
 var timeBar;
 var timeFill;
+var hud;
 
 var GameplayState = {
     
     preload: function() { 
         game.stage.backgroundColor = '#000000';
         game.load.image('grid', 'assets/grid.png'); 
-        game.load.image('devCell', 'assets/room1.png');
+        game.load.image('room1', 'assets/room1.png');
 
         game.load.image('timeBar', 'assets/gui/timeBar.png');
+        game.load.image('hud', 'assets/gui/hud.png');
     },
 
     create: function() { 
@@ -43,16 +46,25 @@ var GameplayState = {
 
         // Create grid
         grid = game.add.group();
+
+        gridInfo = new Array(gridX);
+        for(var i = 0; i < gridX; i++){
+            gridInfo[i] = new Array(gridY);
+            for(var j = 0; j < gridY; j++){
+                gridInfo[i][j] = new GridCell(0);
+            }
+        }
+
         for(var i = 0; i < gridX; i++){
             for(var j = 0; j < gridY; j++){
                 var cell = grid.create(gridOffset+i*cellSize,gridOffset+j*cellSize,"grid");
-                cell.scale.x = 1.5;
-                cell.scale.y = 1.5;
                 // Add event listeners to every cell
-                cell.inputEnabled = true
+                cell.inputEnabled = true;
                 cell.events.onInputOver.add(this.cellOver, this);
                 cell.events.onInputOut.add(this.cellOut, this);
                 cell.events.onInputDown.add(this.cellClick, this);
+                cell.tint = 0x1ABBB4;
+                gridInfo[i][j].id = grid.getIndex(cell);
             }
         }
 
@@ -67,15 +79,13 @@ var GameplayState = {
             }
         }
 
+        // Create GUI
+        this.drawUI();
+
         // First Cell
         this.putCell(gridOffset + (gridX/2) * cellSize, gridOffset + (gridY/2) * cellSize);
-
-        // Create GUI
-        timeBar                 = this.game.add.sprite(20, 20, 'timeBar');
-        timeFill                = this.game.add.sprite(20, 20, 'timeBar');
-        timeBar.fixedToCamera   = true;
-        timeFill.fixedToCamera  = true;
-        timeFill.tint           = 0xcccccc;
+        canUseCell          = true;  
+        timeFill.tint       = 0xACD372 
     },
 
     update: function() {
@@ -93,18 +103,16 @@ var GameplayState = {
 
         // Update time bar if cannot put cell on board
         if(!canUseCell){
-            turnElapsedTime += game.time.totalElapsedSeconds();
+            turnElapsedTime += game.time.elapsed;
+            timeFill.scale.x = turnElapsedTime / turnTime;
 
-            timeFill.scale.x = 1 - (turnElapsedTime / turnTime);
-
-            if(timeFill.scale.x < 0){
-                timeFill.scale.x = 0;
-                canUseCell = true;   
+            if(timeFill.scale.x > 1){
+                timeFill.scale.x = 1;
+                canUseCell          = true;
+                highlight           = true;
+                timeFill.tint       = 0xACD372 
             }
-        } else {
-            // Look for correct cells and highlight them
         }
-
     },
 
     drag: function(){
@@ -136,26 +144,68 @@ var GameplayState = {
         var cellX = Math.trunc(e.x/cellSize);
         var cellY = Math.trunc(e.y/cellSize);
         var canPut = false;
-
-        for(var i = cellX - 1; i > cellX + 2; i++){
-            for(var j = cellY - 1; j > cellY + 2; j++){
-                if(i != cellX && j != cellY){
-                    if(boardInfo[i][j].used)
-                        canPut = true;
+        if(canUseCell){
+            if(!boardInfo[cellX][cellY].used){
+                for(var i = cellX - 1; i < cellX + 2; i++){
+                    for(var j = cellY - 1; j < cellY + 2; j++){
+                        if(i >= 0 && j >= 0 && i <= gridX && j <= gridY){
+                            if(!(i == cellX && j == cellY) && !(i != cellX && j != cellY)){
+                                if(boardInfo[i][j].used){
+                                    canPut = true;
+                                }
+                            }
+                        }
+                    } 
                 }
-            } 
-        }
+            }
 
-        if(canPut){
-            this.putCell(e.x, e.y);
+            if(canPut){
+                this.putCell(e.x, e.y);
+            } 
         }
     },
 
     putCell: function(x, y){
-        var cellX = Math.trunc(x/cellSize);
-        var cellY = Math.trunc(y/cellSize);
-        boardInfo[cellX][cellY].used = true;
-        console.log(boardInfo[cellX][cellY]);
-        var cell = board.create(x, y, "devCell");
-    }
+        var cellX                       = Math.trunc(x/cellSize);
+        var cellY                       = Math.trunc(y/cellSize);
+        var cell                        = board.create(x, y, "room1");
+        boardInfo[cellX][cellY].used    = true;
+        turnElapsedTime                 = 0;
+        canUseCell                      = false;
+        timeFill.tint                   = 0xf0f28b;
+        this.highlightCells();
+    },
+
+    highlightCells: function(){
+        for(var x = 0; x < gridX; x++){
+            for(var y = 0; y < gridY; y++){
+                if(boardInfo[x][y].used){
+                   for(var i = x - 1; i < x + 2; i++){
+                        for(var j = y - 1; j < y + 2; j++){
+                            if(i >= 0 && j >= 0 && i <= gridX && j <= gridY){
+                                if(!(i == x && j == y) && !(i != x && j != y)){
+                                    if(!boardInfo[i][j].used){
+                                        // This cell is available 
+                                        var cell    = grid.getAt(gridInfo[i][j].id);
+                                        cell.tint   = 0xFFF467;
+                                    }
+                                }
+                            }
+                        } 
+                    } 
+                }
+            } 
+        }
+    },
+
+    drawUI: function(){
+        timeBar                 = this.game.add.sprite(56, 3, 'timeBar');
+        timeFill                = this.game.add.sprite(56, 3, 'timeBar');
+        hud                     = this.game.add.sprite(0, 0, 'hud');
+        timeBar.fixedToCamera   = true;
+        timeFill.fixedToCamera  = true;
+        hud.fixedToCamera       = true;
+        timeBar.tint            = 0x232324;
+        timeFill.tint           = 0xf0f28b;
+    },
 };

@@ -7,3 +7,7 @@ function Cell (x, y, top, left, bottom, right) {
 	this.right 		= right;
 	this.used		= false;
 }
+
+function GridCell(id){
+	this.id 		= id;
+}
