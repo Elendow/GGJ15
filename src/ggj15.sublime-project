@@ -11,6 +11,10 @@
         	"name": "JAVASCRIPT",
             "path": "js",
             "file_exclude_patterns": ["*phaser*"]
+        },
+        {
+            "name": "ASSETS",
+            "path": "assets"
         }
     ]
 }

@@ -20,7 +20,7 @@ var GameplayState = {
     preload: function() { 
         game.stage.backgroundColor = '#000000';
         game.load.image('grid', 'assets/grid.png'); 
-        game.load.image('devCell', 'assets/devCell.png');
+        game.load.image('devCell', 'assets/room1.png');
     },
 
     create: function() { 
