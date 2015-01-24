@@ -242,11 +242,10 @@ var GameplayState = {
     },
 
     movePeople: function(cellFrom, cellTo){
+        var cellFromX = Math.trunc(cellFrom.x / cellSize);
+        var cellFromY = Math.trunc(cellFrom.y / cellSize);
+
         for(var i = 0; i < people.length; i++){
-            var cellFromX = Math.trunc(cellFrom.x / cellSize);
-            var cellFromY = Math.trunc(cellFrom.y / cellSize);
-            console.log("P: " + people[i].cell.x + "," + people[i].cell.y);
-            console.log("C: " + cellFromX+ "," + cellFromY);
             if(people[i].cell.x == cellFromX && people[i].cell.y == cellFromY && people[i].movements > 0){  
                 people[i].cell.x = Math.trunc(cellTo.x / cellSize);
                 people[i].cell.y = Math.trunc(cellTo.y / cellSize);              
