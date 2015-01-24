@@ -38,6 +38,7 @@ var roomSelected;
 var GameplayState = {
     
     preload: function() { 
+        // Preload all assets
         game.stage.backgroundColor = '#000000';
         game.load.image('grid'      , 'assets/grid.png'); 
         game.load.image('room1'     , 'assets/room1.png');
@@ -45,14 +46,20 @@ var GameplayState = {
         game.load.image('timeBar'   , 'assets/gui/timeBar.png');
         game.load.image('hud'       , 'assets/gui/hud.png');
 
-        game.load.image('pj'        , 'assets/nino1_sprite.png');
         game.load.image('bg'        , 'assets/background.png');
 
-        game.load.spritesheet("pj", 'assets/nino1_spritesheet.png', 23, 40, 9);
+        game.load.spritesheet("pj"  , 'assets/nino1_spritesheet.png', 23, 40, 9);
+        game.load.spritesheet("cop" , 'assets/police_spritesheet.png', 23, 40, 9);
 
+        game.load.bitmapFont('PixelFont','assets/font/font.png', 'assets/font/font.fnt');
     },
 
     create: function() {
+
+        // Create font style
+        style = { font: "50px PixelFont", fill: "#ffffff", align: "left" };
+
+        // Physics
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
         // Use world bounds in order to set limits to the camera
@@ -64,7 +71,6 @@ var GameplayState = {
 
         // Background
         bg = game.add.tileSprite(0, 0,(gridOffset*2)+gridX*cellSize, (gridOffset*2)+gridY*cellSize, 'bg');
-
 
         // Create grid
         grid = game.add.group();
@@ -208,7 +214,6 @@ var GameplayState = {
             var lastCellY = Math.trunc(roomSelected.y / cellSize);
 
             if(this.detectCellProximity(cellX, cellY, lastCellX, lastCellY)){
-                console.log(cellX + "," + cellY + "-" + lastCellX + "," + lastCellY);
                 if(cellX != lastCellX || cellY != lastCellY){
                     this.movePeople(roomSelected, e);
                 }
@@ -244,13 +249,12 @@ var GameplayState = {
     movePeople: function(cellFrom, cellTo){
         var cellFromX = Math.trunc(cellFrom.x / cellSize);
         var cellFromY = Math.trunc(cellFrom.y / cellSize);
+        var cellToX = Math.trunc(cellTo.x / cellSize);
+        var cellToY = Math.trunc(cellTo.y / cellSize);
 
         for(var i = 0; i < people.length; i++){
-            if(people[i].cell.x == cellFromX && people[i].cell.y == cellFromY && people[i].movements > 0){  
-                people[i].cell.x = Math.trunc(cellTo.x / cellSize);
-                people[i].cell.y = Math.trunc(cellTo.y / cellSize);              
-                people[i].movements -= 1;
-
+            console.log("P: " + people[i].cell.x  + "," + people[i].cell.y);
+            if(people[i].cell.x == cellFromX && people[i].cell.y == cellFromY && people[i].movements >= 0){  
                 if(cellTo.x > cellFrom.x){
                     people[i].sprite.animations.play('right');
                 }
@@ -262,14 +266,19 @@ var GameplayState = {
                             .to({x: cellTo.x + (cellSize / 2) - (people[i].sprite.width / 2), y: cellTo.y + (cellSize / 2) - (people[i].sprite.height / 2)}, 1200, Phaser.Easing.Linear.None)
                             .to({x: cellTo.x + game.rnd.integerInRange(20,cellSize - 20 - people[i].sprite.width) , y: cellTo.y + game.rnd.integerInRange(20,cellSize-people[i].sprite.height - 20)}, 600, Phaser.Easing.Linear.None)
                             .start();
-                tween.onComplete.add(this.backToIdle, this);
+                tween.onComplete.add(function(){this.backToIdle(cellToX,cellToY);}, this);
             }
         }
     },
 
-    backToIdle: function(sprite){
+    backToIdle: function(x,y){
         for(var i = 0; i < people.length; i++){
-            people[i].sprite.animations.play('idle');
+            if(people[i].sprite.animations.currentAnim != "idle"){
+                people[i].sprite.animations.play('idle');
+                people[i].cell.x = x;
+                people[i].cell.y = y; 
+                people[i].movements -= 1;       
+            }
         }
     },
 
@@ -365,6 +374,9 @@ var GameplayState = {
         bg.fixedToCamera        = true;
         timeBar.tint            = 0x232324;
         timeFill.tint           = 0xf0f28b;
+
+        turn = game.add.bitmapText(80, 6, 'PixelFont','Turn',13);
+        turn.fixedToCamera      = true;
     },
 
     addPeople: function(cell){
