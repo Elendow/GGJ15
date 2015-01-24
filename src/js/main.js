@@ -9,4 +9,4 @@ function ChangeState(state) {
 game.state.add('MainMenu', MainMenuState);  
 game.state.add('Gameplay', GameplayState);  
 
-game.state.start('MainMenu'); 
+game.state.start('Gameplay'); 
