@@ -20,7 +20,7 @@ var draggin         = false;
 var cameraSpeed     = 15;
 
 // GUI variables
-var turnTime        = 5000;
+var turnTime        = 2500;
 var turnElapsedTime = 99999;
 var timeBar;
 var timeFill;
@@ -47,6 +47,8 @@ var GameplayState = {
 
         game.load.image('pj'        , 'assets/nino1_sprite.png');
         game.load.image('bg'        , 'assets/background.png');
+
+        game.load.spritesheet("pj", 'assets/nino1_spritesheet.png', 23, 40, 9);
 
     },
 
@@ -195,60 +197,87 @@ var GameplayState = {
     },
 
     roomClick: function(e){
-        var cellX       = Math.trunc(e.x/cellSize);
-        var cellY       = Math.trunc(e.y/cellSize);
+        var cellX = Math.trunc(e.x / cellSize);
+        var cellY = Math.trunc(e.y / cellSize);
 
         if(roomSelected == null){
             roomSelected = e;
-            gridInfo[cellX][cellY].sprite.tint = 0xff0000;
+            boardInfo[cellX][cellY].sprite.tint = 0xb6b6ff
         } else {
-            var lastCellX = Math.trunc(roomSelected.x/cellSize);
-            var lastCellY = Math.trunc(roomSelected.y/cellSize);
-            
-            if(this.detectCellProximity(lastCellX, lastCellY, cellX, cellY)){
-                if(roomSelected != e){
+            var lastCellX = Math.trunc(roomSelected.x / cellSize);
+            var lastCellY = Math.trunc(roomSelected.y / cellSize);
+
+            if(this.detectCellProximity(cellX, cellY, lastCellX, lastCellY)){
+                console.log(cellX + "," + cellY + "-" + lastCellX + "," + lastCellY);
+                if(cellX != lastCellX || cellY != lastCellY){
                     this.movePeople(roomSelected, e);
                 }
                 this.resetSelection(); 
+            } else {
+                roomSelected = e;
+                boardInfo[cellX][cellY].sprite.tint = 0xffffff;
             }
         }
     },
 
     detectCellProximity: function(cellX, cellY, toCellX, toCellY){
 
-        if(cellX == toCellX && cellY == toCellY)
+        if(cellX == toCellX && cellY == toCellY){
+            this.resetSelection();
             return false;
+        }
 
         if(cellX == toCellX){
-            if(toCellY == cellY-1 || toCellY+1){
+            if(toCellY == cellY - 1 || toCellY == cellY + 1){
                 return true;
             }
         }
 
-        else if (cellY == toCellY){
-            if(toCellX == cellX-1 || toCellX+1){
+        if (cellY == toCellY){
+            if(toCellX == cellX - 1 || toCellX == cellX + 1){
                 return true;
             }
         }
-
         return false;
     },
 
     movePeople: function(cellFrom, cellTo){
         for(var i = 0; i < people.length; i++){
-            var cellFromX = Math.trunc(cellFrom.x/cellSize);
-            var cellFromY = Math.trunc(cellFrom.y/cellSize);
+            var cellFromX = Math.trunc(cellFrom.x / cellSize);
+            var cellFromY = Math.trunc(cellFrom.y / cellSize);
+            console.log("P: " + people[i].cell.x + "," + people[i].cell.y);
+            console.log("C: " + cellFromX+ "," + cellFromY);
+            if(people[i].cell.x == cellFromX && people[i].cell.y == cellFromY && people[i].movements > 0){  
+                people[i].cell.x = Math.trunc(cellTo.x / cellSize);
+                people[i].cell.y = Math.trunc(cellTo.y / cellSize);              
+                people[i].movements -= 1;
 
-            if(people[i].cell.x == cellFromX && people[i].cell.y == cellFromY){
-                tween = game.add.tween(people[i].sprite).to({ x: cellTo.x + game.rnd.integerInRange(0,cellSize - people[i].sprite.width) , y: cellTo.y + game.rnd.integerInRange(0,cellSize-people[i].sprite.height) }, 2000, Phaser.Easing.Linear.None, true);
+                if(cellTo.x > cellFrom.x){
+                    people[i].sprite.animations.play('right');
+                }
+                else if(cellTo.x < cellFrom.x){
+                    people[i].sprite.animations.play('left');     
+                }
+
+                var tween = this.game.add.tween(people[i].sprite).to({x: cellFrom.x + (cellSize / 2) - (people[i].sprite.width / 2), y: cellFrom.y + (cellSize / 2) - (people[i].sprite.height / 2)}, 600, Phaser.Easing.Linear.None)
+                            .to({x: cellTo.x + (cellSize / 2) - (people[i].sprite.width / 2), y: cellTo.y + (cellSize / 2) - (people[i].sprite.height / 2)}, 1200, Phaser.Easing.Linear.None)
+                            .to({x: cellTo.x + game.rnd.integerInRange(20,cellSize - 20 - people[i].sprite.width) , y: cellTo.y + game.rnd.integerInRange(20,cellSize-people[i].sprite.height - 20)}, 600, Phaser.Easing.Linear.None)
+                            .start();
+                tween.onComplete.add(this.backToIdle, this);
             }
+        }
+    },
+
+    backToIdle: function(sprite){
+        for(var i = 0; i < people.length; i++){
+            people[i].sprite.animations.play('idle');
         }
     },
 
     addCellOnClick: function(){
        if(!draggin){
-            var cellX = Math.trunc(clicked.x/cellSize);
-            var cellY = Math.trunc(clicked.y/cellSize);
+            var cellX = Math.trunc(clicked.x / cellSize);
+            var cellY = Math.trunc(clicked.y / cellSize);
             var canPut = false;
             if(canUseCell){
                 if(!boardInfo[cellX][cellY].used){
@@ -276,12 +305,10 @@ var GameplayState = {
     },
 
     resetSelection: function(){
-        if(roomSelected != null){
-            var cellX       = Math.trunc(roomSelected.x/cellSize);
-            var cellY       = Math.trunc(roomSelected.y/cellSize);
-            roomSelected    = null;
-            gridInfo[cellX][cellY].sprite.tint = 0x1ABBB4; 
-        }
+        var cellX       = Math.trunc(roomSelected.x/cellSize);
+        var cellY       = Math.trunc(roomSelected.y/cellSize);
+        roomSelected    = null;
+        boardInfo[cellX][cellY].sprite.tint = 0xffffff; 
     },
 
     putCell: function(x, y){
@@ -300,6 +327,10 @@ var GameplayState = {
         cell.events.onInputOver.add(this.roomOver, this);
         cell.events.onInputOut.add(this.roomOut, this);
         cell.events.onInputDown.add(this.roomClick, this);
+
+        for(var i = 0; i < people.length; i++){
+            people[i].movements = people[i].maxMovements;
+        }
 
         return boardInfo[cellX][cellY];
     },
@@ -332,15 +363,19 @@ var GameplayState = {
         timeBar.fixedToCamera   = true;
         timeFill.fixedToCamera  = true;
         hud.fixedToCamera       = true;
+        bg.fixedToCamera        = true;
         timeBar.tint            = 0x232324;
         timeFill.tint           = 0xf0f28b;
-        bg.fixedToCamera        = true;
     },
 
     addPeople: function(cell){
         for(var i = 1; i < game.rnd.integerInRange(2,4); i++){
             var sprite = peopleGrp.create((cell.x * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2) , (cell.y * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2), 'pj');
             people.push(new Person(20, sprite, cell));
+            sprite.animations.add('idle',   [0, 1, 2]   ,  5, true);
+            sprite.animations.add('right',  [3, 4, 3, 5], 10, true);
+            sprite.animations.add('left',   [6, 7, 6, 8], 10, true);
+            sprite.animations.play('idle');
         }
     },
 };
