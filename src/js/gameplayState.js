@@ -11,6 +11,7 @@ var board;
 var boardInfo;
 var maxCells        = 30;
 var canUseCell      = true;
+var clicked;
 
 // Camera and drag variables
 var dragX           = -1;
@@ -25,18 +26,33 @@ var timeBar;
 var timeFill;
 var hud;
 
+// Chacaters variables
+var people      = [];
+var soldats     = [];
+var aliens      = [];
+var peopleGrp;
+var soldatsGrp;
+var aliensGrp;
+var roomSelected;
+
 var GameplayState = {
     
     preload: function() { 
         game.stage.backgroundColor = '#000000';
-        game.load.image('grid', 'assets/grid.png'); 
-        game.load.image('room1', 'assets/room1.png');
+        game.load.image('grid'      , 'assets/grid.png'); 
+        game.load.image('room1'     , 'assets/room1.png');
 
-        game.load.image('timeBar', 'assets/gui/timeBar.png');
-        game.load.image('hud', 'assets/gui/hud.png');
+        game.load.image('timeBar'   , 'assets/gui/timeBar.png');
+        game.load.image('hud'       , 'assets/gui/hud.png');
+
+        game.load.image('pj'        , 'assets/nino1_sprite.png');
+        game.load.image('bg'        , 'assets/background.png');
+
     },
 
-    create: function() { 
+    create: function() {
+        game.physics.startSystem(Phaser.Physics.ARCADE);
+
         // Use world bounds in order to set limits to the camera
         game.world.setBounds(0, 0, (gridOffset*2)+gridX*cellSize, (gridOffset*2)+gridY*cellSize);
 
@@ -44,13 +60,17 @@ var GameplayState = {
         game.camera.x = (((gridOffset*2)+gridX*cellSize) / 2) - (game.width / 2);
         game.camera.y = (((gridOffset*2)+gridY*cellSize) / 2) - (game.height / 2);
 
+        // Background
+        bg = game.add.tileSprite(0, 0,(gridOffset*2)+gridX*cellSize, (gridOffset*2)+gridY*cellSize, 'bg');
+
+
         // Create grid
         grid = game.add.group();
 
         gridInfo = new Array(gridX);
-        for(var i = 0; i < gridX; i++){
+        for(var i = 0; i <= gridX; i++){
             gridInfo[i] = new Array(gridY);
-            for(var j = 0; j < gridY; j++){
+            for(var j = 0; j <= gridY; j++){
                 gridInfo[i][j] = new GridCell(0);
             }
         }
@@ -64,7 +84,7 @@ var GameplayState = {
                 cell.events.onInputOut.add(this.cellOut, this);
                 cell.events.onInputDown.add(this.cellClick, this);
                 cell.tint = 0x1ABBB4;
-                gridInfo[i][j].id = grid.getIndex(cell);
+                gridInfo[i][j].sprite = cell;
             }
         }
 
@@ -72,18 +92,27 @@ var GameplayState = {
         board = game.add.group();
 
         boardInfo = new Array(gridX);
-        for(var i = 0; i < gridX; i++){
+        for(var i = 0; i <= gridX; i++){
             boardInfo[i] = new Array(gridY);
-            for(var j = 0; j < gridY; j++){
+            for(var j = 0; j <= gridY; j++){
                 boardInfo[i][j] = new Cell(i,j,true,true,true,true);
             }
         }
+
+        // Prepare characters groups
+        peopleGrp                               = game.add.group();
+        soldatsGrp                              = game.add.group();
+        aliensGrp                               = game.add.group();
 
         // Create GUI
         this.drawUI();
 
         // First Cell
-        this.putCell(gridOffset + (gridX/2) * cellSize, gridOffset + (gridY/2) * cellSize);
+        var firstCell = this.putCell(gridOffset + (gridX/2) * cellSize, gridOffset + (gridY/2) * cellSize);
+        
+        // Create First Characters
+        this.addPeople(firstCell);
+
         canUseCell          = true;  
         timeFill.tint       = 0xACD372 
     },
@@ -113,19 +142,31 @@ var GameplayState = {
                 timeFill.tint       = 0xACD372 
             }
         }
+
+        // Detect click
+        if(clicked != null) 
+            this.addCellOnClick();
     },
 
     drag: function(){
         // Compare actual input position with last input position
-        if(game.input.y > dragY+5)
-            game.camera.y += cameraSpeed;
-        else if(game.input.y < dragY-5)
-            game.camera.y -= cameraSpeed;
-
-       if(game.input.x > dragX+5)
-            game.camera.x += cameraSpeed;
-        else if(game.input.x < dragX-5)
-            game.camera.x -= cameraSpeed;
+        if(game.input.y > dragY + 5 || game.input.y > (height - 30)){
+            game.camera.y += cameraSpeed; 
+            clicked = null;
+        }
+        else if(game.input.y < dragY - 5 || game.input.y < 30){
+            game.camera.y -= cameraSpeed; 
+            clicked = null;
+        }
+        
+        if(game.input.x > dragX + 5 || game.input.x > (width - 30)){
+            game.camera.x += cameraSpeed; 
+            clicked = null;
+        }
+        else if(game.input.x < dragX - 5 || game.input.x < 30){
+            game.camera.x -= cameraSpeed; 
+            clicked = null;
+        }
 
         // Save last input position
         dragY = game.input.y;
@@ -141,39 +182,126 @@ var GameplayState = {
     },
 
     cellClick: function(e){
-        var cellX = Math.trunc(e.x/cellSize);
-        var cellY = Math.trunc(e.y/cellSize);
-        var canPut = false;
-        if(canUseCell){
-            if(!boardInfo[cellX][cellY].used){
-                for(var i = cellX - 1; i < cellX + 2; i++){
-                    for(var j = cellY - 1; j < cellY + 2; j++){
-                        if(i >= 0 && j >= 0 && i <= gridX && j <= gridY){
-                            if(!(i == cellX && j == cellY) && !(i != cellX && j != cellY)){
-                                if(boardInfo[i][j].used){
-                                    canPut = true;
+        // Save cell for next frame (no click when drag)
+        clicked = e;
+    },
+
+    roomOver: function(e){
+        e.alpha = 0.5;
+    },
+
+    roomOut: function(e){
+        e.alpha = 1;
+    },
+
+    roomClick: function(e){
+        var cellX       = Math.trunc(e.x/cellSize);
+        var cellY       = Math.trunc(e.y/cellSize);
+
+        if(roomSelected == null){
+            roomSelected = e;
+            gridInfo[cellX][cellY].sprite.tint = 0xff0000;
+        } else {
+            var lastCellX = Math.trunc(roomSelected.x/cellSize);
+            var lastCellY = Math.trunc(roomSelected.y/cellSize);
+            
+            if(this.detectCellProximity(lastCellX, lastCellY, cellX, cellY)){
+                if(roomSelected != e){
+                    this.movePeople(roomSelected, e);
+                }
+                this.resetSelection(); 
+            }
+        }
+    },
+
+    detectCellProximity: function(cellX, cellY, toCellX, toCellY){
+
+        if(cellX == toCellX && cellY == toCellY)
+            return false;
+
+        if(cellX == toCellX){
+            if(toCellY == cellY-1 || toCellY+1){
+                return true;
+            }
+        }
+
+        else if (cellY == toCellY){
+            if(toCellX == cellX-1 || toCellX+1){
+                return true;
+            }
+        }
+
+        return false;
+    },
+
+    movePeople: function(cellFrom, cellTo){
+        for(var i = 0; i < people.length; i++){
+            var cellFromX = Math.trunc(cellFrom.x/cellSize);
+            var cellFromY = Math.trunc(cellFrom.y/cellSize);
+
+            if(people[i].cell.x == cellFromX && people[i].cell.y == cellFromY){
+                tween = game.add.tween(people[i].sprite).to({ x: cellTo.x + game.rnd.integerInRange(0,cellSize - people[i].sprite.width) , y: cellTo.y + game.rnd.integerInRange(0,cellSize-people[i].sprite.height) }, 2000, Phaser.Easing.Linear.None, true);
+            }
+        }
+    },
+
+    addCellOnClick: function(){
+       if(!draggin){
+            var cellX = Math.trunc(clicked.x/cellSize);
+            var cellY = Math.trunc(clicked.y/cellSize);
+            var canPut = false;
+            if(canUseCell){
+                if(!boardInfo[cellX][cellY].used){
+                    for(var i = cellX - 1; i < cellX + 2; i++){
+                        for(var j = cellY - 1; j < cellY + 2; j++){
+                            if(i >= 0 && j >= 0 && i <= gridX && j <= gridY){
+                                if(!(i == cellX && j == cellY) && !(i != cellX && j != cellY)){
+                                    if(boardInfo[i][j].used){
+                                        canPut = true;
+                                    }
                                 }
                             }
-                        }
-                    } 
+                        } 
+                    }
                 }
-            }
 
-            if(canPut){
-                this.putCell(e.x, e.y);
-            } 
+                if(canPut){
+                    if(roomSelected != null)
+                        this.resetSelection();
+                    this.putCell(clicked.x, clicked.y);
+                } 
+            }
+            clicked = null;
+        } 
+    },
+
+    resetSelection: function(){
+        if(roomSelected != null){
+            var cellX       = Math.trunc(roomSelected.x/cellSize);
+            var cellY       = Math.trunc(roomSelected.y/cellSize);
+            roomSelected    = null;
+            gridInfo[cellX][cellY].sprite.tint = 0x1ABBB4; 
         }
     },
 
     putCell: function(x, y){
-        var cellX                       = Math.trunc(x/cellSize);
-        var cellY                       = Math.trunc(y/cellSize);
-        var cell                        = board.create(x, y, "room1");
-        boardInfo[cellX][cellY].used    = true;
-        turnElapsedTime                 = 0;
-        canUseCell                      = false;
-        timeFill.tint                   = 0xf0f28b;
+        var cellX                           = Math.trunc(x/cellSize);
+        var cellY                           = Math.trunc(y/cellSize);
+        var cell                            = board.create(x, y, "room1");
+        boardInfo[cellX][cellY].used        = true;
+        boardInfo[cellX][cellY].sprite      = cell;
+        turnElapsedTime                     = 0;
+        canUseCell                          = false;
+        timeFill.tint                       = 0xf0f28b;
+        gridInfo[cellX][cellY].sprite.tint  = 0x1ABBB4;
         this.highlightCells();
+
+        cell.inputEnabled = true;
+        cell.events.onInputOver.add(this.roomOver, this);
+        cell.events.onInputOut.add(this.roomOut, this);
+        cell.events.onInputDown.add(this.roomClick, this);
+
+        return boardInfo[cellX][cellY];
     },
 
     highlightCells: function(){
@@ -185,9 +313,8 @@ var GameplayState = {
                             if(i >= 0 && j >= 0 && i <= gridX && j <= gridY){
                                 if(!(i == x && j == y) && !(i != x && j != y)){
                                     if(!boardInfo[i][j].used){
-                                        // This cell is available 
-                                        var cell    = grid.getAt(gridInfo[i][j].id);
-                                        cell.tint   = 0xFFF467;
+                                        // This cell is fucking available 
+                                        gridInfo[i][j].sprite.tint   = 0xFFF467;
                                     }
                                 }
                             }
@@ -199,13 +326,21 @@ var GameplayState = {
     },
 
     drawUI: function(){
-        timeBar                 = this.game.add.sprite(56, 3, 'timeBar');
-        timeFill                = this.game.add.sprite(56, 3, 'timeBar');
-        hud                     = this.game.add.sprite(0, 0, 'hud');
+        timeBar                 = game.add.sprite(56, 3, 'timeBar');
+        timeFill                = game.add.sprite(56, 3, 'timeBar');
+        hud                     = game.add.sprite(0, 0, 'hud');
         timeBar.fixedToCamera   = true;
         timeFill.fixedToCamera  = true;
         hud.fixedToCamera       = true;
         timeBar.tint            = 0x232324;
         timeFill.tint           = 0xf0f28b;
+        bg.fixedToCamera        = true;
+    },
+
+    addPeople: function(cell){
+        for(var i = 1; i < game.rnd.integerInRange(2,4); i++){
+            var sprite = peopleGrp.create((cell.x * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2) , (cell.y * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2), 'pj');
+            people.push(new Person(20, sprite, cell));
+        }
     },
 };

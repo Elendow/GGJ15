@@ -2,7 +2,7 @@ var width   = 800;
 var height  = 600;
 var game    = new Phaser.Game(width, height, Phaser.AUTO, 'canvas');
 
-function ChangeState(state) {
+function changeState(state) {
     game.state.start(state);
 }
 

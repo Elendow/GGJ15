@@ -6,7 +6,7 @@ var MainMenuState = {
 
     update: function() {
         var spaceKey = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-        spaceKey.onDown.add(function(){ChangeState('Gameplay')}, this);  
+        spaceKey.onDown.add(function(){changeState('Gameplay')}, this);  
     },
 
 };
