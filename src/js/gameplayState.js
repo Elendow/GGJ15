@@ -48,15 +48,15 @@ var GameplayState = {
     preload: function() { 
         // Preload all assets
         game.stage.backgroundColor = '#000000';
-        game.load.image('grid'              , 'assets/grid.png'); 
-        game.load.image('room1'             , 'assets/room1.png');
+        game.load.image('grid'              , 'assets/sprites/grid.png'); 
+        game.load.image('room1'             , 'assets/sprites/room1.png');
         game.load.image('timeBar'           , 'assets/gui/timeBar.png');
         game.load.image('hud'               , 'assets/gui/hud.png');
-        game.load.image('bg'                , 'assets/background.png');
-        game.load.spritesheet("pj"          , 'assets/nino1_spritesheet.png', 23, 40, 9);
-        game.load.spritesheet("cop"         , 'assets/police_spritesheet.png', 23, 40, 9);
-        game.load.spritesheet("alien"       , 'assets/alien.png', 27, 51, 3);
-        game.load.bitmapFont('PixelFont'    ,'assets/font/font.png', 'assets/font/font.fnt');
+        game.load.image('bg'                , 'assets/sprites/background.png');
+        game.load.spritesheet("pj"          , 'assets/sprites/nino1_spritesheet.png', 23, 40, 9);
+        game.load.spritesheet("cop"         , 'assets/sprites/police_spritesheet.png', 23, 40, 9);
+        game.load.spritesheet("alien"       , 'assets/sprites/alien.png', 27, 51, 3);
+        game.load.bitmapFont('PixelFont'    , 'assets/font/font.png', 'assets/font/font.fnt');
     },
 
     create: function() {
@@ -351,7 +351,7 @@ var GameplayState = {
         for(var i = 0; i < aliens.length; i++){
              
         }
-    }
+    },
 
     backToIdle: function(x,y){
         for(var i = 0; i < people.length; i++){
