@@ -44,10 +44,6 @@ var roomSelected;
 var gameGroup;
 var aliensTimer = 500;
 
-
-// Other
-var music;
-
 var GameplayState = {
     
     preload: function() { 
@@ -63,7 +59,6 @@ var GameplayState = {
         game.load.spritesheet("alien"       , 'assets/sprites/alien.png', 27, 51, 3);
         game.load.bitmapFont('PixelFont'    , 'assets/font/font.png', 'assets/font/font.fnt');
         game.load.audio('metalClip'         , 'assets/sounds/metalClick.ogg');
-        game.load.audio('bgMusic'           , 'assets/sounds/bgMusic.mp3');
     },
 
     create: function() {
@@ -84,8 +79,6 @@ var GameplayState = {
         fx = game.add.audio('metalClip');
         fx.allowMultiple = true;
         fx.addMarker('metalClip', 0, 1);
-        music = game.add.audio('bgMusic');
-        music.play();
 
         // Create grid
         grid = game.add.group();
@@ -179,7 +172,7 @@ var GameplayState = {
         if(aliens.length > 0){
             aliensTimer -= game.time.elapsed;
             if(aliensTimer <= 0){
-                aliensTimer = game.rnd.integerInRange(1000,2000);
+                aliensTimer = game.rnd.integerInRange(3000,6000);
                 this.moveAliens();
             }
         }
@@ -370,50 +363,55 @@ var GameplayState = {
     },
 
     moveAliens: function(){
-        var cellFrom;
-        var cellX;
-        var cellY;
-        var cellTo;
-        var possibleCells = [];
         for(var i = 0; i < aliens.length; i++){
-            if(aliens[i].sprite !== null){
+            if(aliens[i].sprite != null){
                 if(aliens[i].movements >= 0){
-                    cellFrom        = aliens[i].cell;
-                    cellX           = aliens[i].x;
-                    cellY           = aliens[i].y;
-                    possibleCells   = [];
+                    var cellFrom = new Cell(-1,-1);
+                    cellFrom.x = aliens[i].x;
+                    cellFrom.y = aliens[i].y;
+                    var possibleCells   = [];
 
-                    for(i = cellX - 1; i < cellX + 2; i++){
-                        for(j = cellY - 1; j < cellY + 2; j++){
-                            if(i > 0 && j > 0 && i < gridX && j < gridY){
-                                if(!(i == cellX && j == cellY) && !(i != cellX && j != cellY)){
-                                    if(boardInfo[i][j].used){
-                                        cellTo = boardInfo[i][j];
-                                        possibleCells.push(boardInfo[i][j]);
+                    for(var g = cellFrom.x - 1; g < cellFrom.x + 2; g++){
+                        for(var j = cellFrom.y - 1; j < cellFrom.y + 2; j++){
+                            if(g > 0 && j > 0 && g < gridX && j < gridY){
+                                if(!(g == cellFrom.x && j == cellFrom.y) && !(g != cellFrom.x && j != cellFrom.y)){
+                                    if(boardInfo[g][j].used){
+                                        possibleCells.push(boardInfo[g][j]);
                                     }
                                 }
                             }
                         }
                     }
+                    if(possibleCells.length > 0){
+                        var rand   = game.rnd.integerInRange(0,possibleCells.length - 1);
+                        var cellTo = possibleCells[rand];
+                        aliens[i].movements--;
+                        aliens[i].x    = cellTo.x;
+                        aliens[i].y    = cellTo.y;
+                        aliens[i].cell = cellTo;
 
-                    var cellTo  = possibleCells[game.rnd.integerInRange(0,possibleCells.length - 1)];
-                    aliens[i].sprite.angle = 0;
+                        console.log("Aliens " + aliens[i].x + "," + aliens[i].y);
+                        console.log("CellTo " + cellTo.x + "," + cellTo.y);
+                        console.log("CellFrom " + cellFrom.x + "," + cellFrom.y);
 
-                    if(cellTo.x > cellFrom.x){
-                        aliens[i].sprite.angle = -90;
+                        aliens[i].sprite.angle = 0;
+
+                        if(cellTo.x > cellFrom.x){
+                            aliens[i].sprite.angle = 90;
+                        }
+                        else if(cellTo.x < cellFrom.x){
+                            aliens[i].sprite.angle = -90;    
+                        }
+
+                        if(cellTo.y < cellFrom.y){
+                            aliens[i].sprite.angle = -180;
+                        }
+
+                        var tween = this.game.add.tween(aliens[i].sprite).to({x: (cellFrom.x * cellSize + gridOffset) + (cellSize / 2) - (aliens[i].sprite.width / 2), y: (cellFrom.y * cellSize + gridOffset) + (cellSize / 2) - (aliens[i].sprite.height / 2)}, 600, Phaser.Easing.Linear.None)
+                                            .to({x: (cellTo.x * cellSize + gridOffset) + (cellSize / 2) - (aliens[i].sprite.width / 2), y: (cellTo.y * cellSize + gridOffset) + (cellSize / 2) - (aliens[i].sprite.height / 2)}, 1200, Phaser.Easing.Linear.None)
+                                            .to({x: (cellTo.x * cellSize + gridOffset) + game.rnd.integerInRange(20,cellSize - 20 - (aliens[i].sprite.width / 2)) , y: (cellTo.y * cellSize + gridOffset) + game.rnd.integerInRange(20,cellSize-(aliens[i].sprite.height / 2))}, 600, Phaser.Easing.Linear.None)
+                                            .start();
                     }
-                    else if(cellTo.x < cellFrom.x){
-                        aliens[i].sprite.angle = 90;    
-                    }
-
-                    if(cellTo.y < cellFrom.y){
-                        aliens[i].sprite.angle = 180;
-                    }
-
-                    var tween = this.game.add.tween(aliens[i].sprite).to({x: cellFrom.x + (cellSize / 2) - (aliens[i].sprite.width / 2), y: cellFrom.y + (cellSize / 2) - (aliens[i].sprite.height / 2)}, 600, Phaser.Easing.Linear.None)
-                                        .to({x: cellTo.x + (cellSize / 2) - (aliens[i].sprite.width / 2), y: cellTo.y + (cellSize / 2) - (aliens[i].sprite.height / 2)}, 1200, Phaser.Easing.Linear.None)
-                                        .to({x: cellTo.x + game.rnd.integerInRange(20,cellSize - 20 - aliens[i].sprite.width) , y: cellTo.y + game.rnd.integerInRange(20,cellSize-aliens[i].sprite.height - 20)}, 600, Phaser.Easing.Linear.None)
-                                        .start();
                 }
             }
         }
@@ -471,15 +469,15 @@ var GameplayState = {
                     // Let's summon some things  
                     var rand = game.rnd.integerInRange(0,101);
 
-                    if(rand < 25){
+                    if(rand < 30){
                         // Tripulants!
                         this.addPeople(newCell);
                     }
-                    else if (rand < 55){
+                    else if (rand < 50){
                         // Cops!
                         this.addCops(newCell);
                     }
-                    else if (rand < 85){
+                    else if (rand < 80){
                         // Aliens!
                         this.addAliens(newCell);
                     }

@@ -1,0 +1,254 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"fill",
+				"fillStyle"
+			],
+			[
+				"player",
+				"playerOne"
+			],
+			[
+				"S",
+				"startSystem"
+			],
+			[
+				"bo",
+				"Body"
+			],
+			[
+				"var",
+				"var_dump"
+			],
+			[
+				"date",
+				"date_format"
+			],
+			[
+				"achiev",
+				"achievementsDone"
+			],
+			[
+				"strt",
+				"strtolower"
+			],
+			[
+				"min",
+				"min-height"
+			],
+			[
+				"padd",
+				"padding-left"
+			],
+			[
+				"inline",
+				"inline-block"
+			],
+			[
+				"font",
+				"font-size"
+			],
+			[
+				"wall",
+				"wallfloor"
+			]
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 0.0
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/Users/Elendow/Documents/Proyectos/GGJ15/src/index.html",
+		"/Users/Elendow/Documents/Proyectos/GGJ15/src/mainMenuState.js",
+		"/Users/Elendow/Documents/Proyectos/GGJ15/ggj15.sublime-project",
+		"/Users/Elendow/Documents/Proyectos/GGJ15/src/main.js",
+		"/Users/Elendow/Documents/Proyectos/GGJ15/src/gameplayState.js",
+		"/Users/Elendow/Documents/Proyectos/GGJ15/index.html",
+		"/Users/Elendow/Documents/Proyectos/GGJ15/src/fade.js",
+		"/Users/Elendow/Documents/Proyectos/GlobalGameJam15/index.html",
+		"/Users/Elendow/Documents/Proyectos/GlobalGameJam15/src/main.js",
+		"/Applications/XAMPP/xamppfiles/etc/extra/httpd-vhosts.conf",
+		"/Users/Elendow/Documents/Proyectos/GlobalGameJam15/src/phaser.min.js",
+		"/Users/Elendow/Documents/Proyectos/GlobalGameJam15/phaser.min.js",
+		"/Applications/XAMPP/xamppfiles/etc/original/extra/httpd-vhosts.conf",
+		"/Users/Elendow/Documents/Webs/Elendow/admin/functions/steamSync.php",
+		"/Users/Elendow/Documents/Webs/Elendow/css/style.css",
+		"/Users/Elendow/Documents/Webs/Elendow/includes/functions.php",
+		"/Users/Elendow/Documents/Webs/Elendow/admin/games.php",
+		"/Users/Elendow/Documents/Webs/Elendow/admin/functions/uploadGame.php",
+		"/Users/Elendow/Documents/Webs/Elendow/index.php",
+		"/Users/Elendow/Documents/Webs/Elendow/admin/css/admin.css",
+		"/Users/Elendow/Documents/Webs/Elendow/admin/templates/messageBox.php",
+		"/Users/Elendow/Documents/Webs/Elendow/admin/panel.php",
+		"/Users/Elendow/Documents/Webs/Elendow/admin/js/admin.js",
+		"/Users/Elendow/Documents/Webs/Elendow/games.php",
+		"/Users/Elendow/Documents/Webs/Elendow/admin/templates/header.php",
+		"/Users/Elendow/Documents/Webs/Elendow/admin/functions/updateGame.php",
+		"/Users/Elendow/Documents/Webs/Elendow/fontAwesome/css/font-awesome.css",
+		"/Users/Elendow/Documents/Webs/Elendow/admin/functions/adminLogin.php",
+		"/Users/Elendow/Documents/Webs/Elendow/admin/index.php",
+		"/Users/Elendow/Documents/Webs/Elendow/admin/functions/deleteGame.php",
+		"/Users/Elendow/Documents/Webs/Elendow/admin/steamSync.php",
+		"/Users/Elendow/Documents/Webs/Elendow/admin/uploadGame.php",
+		"/Users/Elendow/Documents/Webs/Elendow/blini/addItem.php",
+		"/Users/Elendow/Documents/Webs/Elendow/blini/addthings.php",
+		"/Users/Elendow/Documents/Webs/Elendow/css/admin.css",
+		"/Users/Elendow/Documents/Webs/Elendow/admin/adminLogin.php",
+		"/Users/Elendow/Documents/Webs/Elendow/admin/includes/header.php",
+		"/Users/Elendow/Documents/Webs/Elendow/admin/panel copia.php",
+		"/Users/Elendow/Documents/Webs/Elendow/blini/index.php",
+		"/Users/Elendow/Documents/Webs/Elendow/blini/deleteItem.php",
+		"/Users/Elendow/Documents/Webs/Elendow/blini/main.css",
+		"/Users/Elendow/Documents/Webs/Elendow/blini/script.js",
+		"/Users/Elendow/Documents/Webs/Elendow/includes/comenta.php",
+		"/Applications/XAMPP/xamppfiles/etc/extra/httpd-xampp.conf",
+		"/Users/Elendow/Documents/Webs/Elendow/includes/config.php",
+		"/Applications/XAMPP/xamppfiles/etc/httpd.conf",
+		"/Applications/XAMPP/xamppfiles/etc/php.ini",
+		"/Users/Elendow/Library/Application Support/Sublime Text 2/Packages/Default/Preferences.sublime-settings",
+		"/Users/Elendow/Library/Application Support/Sublime Text 2/Packages/User/Preferences.sublime-settings",
+		"/Applications/XAMPP/xamppfiles/apache2/conf/httpd.conf",
+		"/private/var/folders/97/h4jvldx97lxfw4k_69dx1_hm0000gn/T/fz3temp-1/es.po"
+	],
+	"find":
+	{
+		"height": 35.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"arcade",
+			"nowpla",
+			"img",
+			";\n",
+			"img",
+			"steam",
+			"arrow",
+			"select",
+			"nav",
+			"navButton",
+			"nav",
+			"save",
+			"buildwalls",
+			"wallfloor",
+			"save",
+			"user",
+			"vhost",
+			"changes",
+			"window"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 0.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"replace":
+	{
+		"height": 0.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"selected_items":
+		[
+		],
+		"width": 380.0
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 150.0,
+	"status_bar_visible": true
+}
