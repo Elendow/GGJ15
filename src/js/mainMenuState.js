@@ -5,7 +5,7 @@ var MainMenuState = {
     preload: function() { 
         this.stage.backgroundColor = '#000000';
         this.load.spritesheet('button-start', 'assets/gui/btnew-game.png', 160, 32);
-        this.load.image('bg', 'assets/background.png');
+        this.load.image('bg', 'assets/sprites/background.png');
         this.load.image('logo', 'assets/gui/logo.png');
     },
 
