@@ -9,6 +9,7 @@ var EndOfGameState = {
         this.load.image('bg', 'assets/sprites/background.png');
         this.load.image('lose', 'assets/gui/logoLose.png');
         this.load.image('win', 'assets/gui/logoWin.png');
+        this.load.image('statistics', 'assets/gui/results.png');
         this.load.audio('metalClip', 'assets/sounds/metalClick.ogg');
     },
 
@@ -19,11 +20,15 @@ var EndOfGameState = {
         fx = this.add.audio('metalClip');
         fx.allowMultiple = true;
         fx.addMarker('metalClip', 0, 1);
-        music = this.add.audio('bgMusic');
         music.play();
 
         if(gameWinned){
-            this.add.sprite(250, 100, 'win');
+            this.add.sprite(250, 50, 'win');
+            this.add.sprite(250, 250, 'statistics');
+            this.add.bitmapText(290, 355, 'PixelFont',pplCounter+"",16);
+            this.add.bitmapText(390, 355, 'PixelFont',copCounter+"",16);
+            this.add.bitmapText(490, 355, 'PixelFont',alienCounter+"",16);       
+
         }else{
             this.add.sprite(250, 100, 'lose');
         }
