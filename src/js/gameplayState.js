@@ -182,9 +182,6 @@ var GameplayState = {
                 this.moveAliens();
             }
         }
-
-        //this.checkAlienKills();
-        //this.checkCopsKills();
         this.checkEndOfGame();
     },
 
@@ -272,7 +269,7 @@ var GameplayState = {
         var cellX = Math.trunc(e.x / cellSize);
         var cellY = Math.trunc(e.y / cellSize);
         if(roomSelected == null){
-            this.resetSelection();
+            //this.resetSelection();
             // Character recount
             var ppl = 0;
             var cop = 0;
@@ -376,7 +373,13 @@ var GameplayState = {
                                     .to({x: cellTo.x + (cellSize / 2) - (people[i].sprite.width / 2), y: cellTo.y + (cellSize / 2) - (people[i].sprite.height / 2)}, 1200, Phaser.Easing.Linear.None)
                                     .to({x: cellTo.x + game.rnd.integerInRange(20,cellSize - 20 - people[i].sprite.width) , y: cellTo.y + game.rnd.integerInRange(20,cellSize-people[i].sprite.height - 20)}, 600, Phaser.Easing.Linear.None)
                                     .start();
-                        tween.onComplete.add(function(){this.backToIdle(cellToX,cellToY);}, this);
+                        tween.onComplete.add(
+                            function(){
+                                this.backToIdle(cellToX,cellToY);
+                                if(i == cops.length - 1)
+                                    this.checkAlienKills(); 
+                                    this.checkCopsKills();
+                        }, this);
                     }  
                 }
             }
@@ -396,7 +399,13 @@ var GameplayState = {
                                     .to({x: cellTo.x + (cellSize / 2) - (cops[i].sprite.width / 2), y: cellTo.y + (cellSize / 2) - (cops[i].sprite.height / 2)}, 1200, Phaser.Easing.Linear.None)
                                     .to({x: cellTo.x + game.rnd.integerInRange(20,cellSize - 20 - cops[i].sprite.width) , y: cellTo.y + game.rnd.integerInRange(20,cellSize-cops[i].sprite.height - 20)}, 600, Phaser.Easing.Linear.None)
                                     .start();
-                        tween.onComplete.add(function(){this.backToIdle(cellToX,cellToY);}, this);
+                        tween.onComplete.add(
+                            function(){
+                                this.backToIdle(cellToX,cellToY);
+                                if(i == cops.length - 1)
+                                    this.checkAlienKills(); 
+                                    this.checkCopsKills();
+                        }, this);
                     }  
                 }
             }
@@ -450,16 +459,15 @@ var GameplayState = {
                                             .to({x: (cellTo.x * cellSize + gridOffset) + (cellSize / 2) - (aliens[i].sprite.width / 2), y: (cellTo.y * cellSize + gridOffset) + (cellSize / 2) - (aliens[i].sprite.height / 2)}, 1200, Phaser.Easing.Linear.None)
                                             .to({x: (cellTo.x * cellSize + gridOffset) + game.rnd.integerInRange(20,cellSize - 50) , y: (cellTo.y * cellSize + gridOffset) + game.rnd.integerInRange(20,50)}, 600, Phaser.Easing.Linear.None)
                                             .start();
-                         tween.onComplete.add(function(){this.checkAlienKills(); this.checkCopsKills();}, this);
+                        if(i == aliens.length - 1) 
+                            tween.onComplete.add(function(){this.checkAlienKills(); this.checkCopsKills();}, this);
                     }
                 }
             }
         }
     },
 
-    backToIdle: function(x,y){
-        this.checkAlienKills();
-        this.checkCopsKills();
+    backToIdle: function(x,y,checkDeads){
         for(var i = 0; i < people.length; i++){
             if(people[i].cell && people[i].sprite && people[i].sprite.alive){
                 if(people[i].sprite.animations.currentAnim != "idle"){
@@ -595,7 +603,7 @@ var GameplayState = {
                         for(var j = y - 1; j < y + 2; j++){
                             if(i >= 0 && j >= 0 && i <= gridX && j <= gridY){
                                 if(!(i == x && j == y) && !(i != x && j != y)){
-                                    if(!boardInfo[i][j].used){
+                                    if(!boardInfo[i][j].used && gridInfo[i][j].sprite){
                                         // This cell is fucking available 
                                         gridInfo[i][j].sprite.tint = 0xFFF467;
                                     }
@@ -738,7 +746,7 @@ var GameplayState = {
 
     checkEndOfGame: function(){
         
-        if(turnNum==10){
+        if(turnNum==15){
             gameWinned=true;
             changeState('EndOfGame');
         }else if (pplCounter==0){
