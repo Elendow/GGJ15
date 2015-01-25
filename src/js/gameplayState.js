@@ -13,6 +13,7 @@ var maxCells        = 30;
 var canUseCell      = true;
 var turnNum         = 0;
 var clicked;
+var unitSelected    = "";
 
 // Camera and drag variables
 var dragX           = -1;
@@ -33,15 +34,14 @@ var hud;
 var pplCounter      = 0;
 var copCounter      = 0;
 var alienCounter    = 0;
+var uiGroup;
 
-// Chacaters variables
+// Characters variables
 var people      = [100];
 var cops        = [100];
 var aliens      = [100];
-var peopleGrp;
-var copsGrp;
-var aliensGrp;
 var roomSelected;
+var gameGroup;
 
 var GameplayState = {
     
@@ -87,7 +87,7 @@ var GameplayState = {
         for(var i = 0; i < gridX; i++){
             for(var j = 0; j < gridY; j++){
                 var cell = grid.create(gridOffset+i*cellSize,gridOffset+j*cellSize,"grid");
-                // Add event listeners to every cell
+                // Add event listeners to every grid cell
                 cell.inputEnabled = true;
                 cell.events.onInputOver.add(this.cellOver, this);
                 cell.events.onInputOut.add(this.cellOut, this);
@@ -104,14 +104,12 @@ var GameplayState = {
         for(var i = 0; i <= gridX; i++){
             boardInfo[i] = new Array(gridY);
             for(var j = 0; j <= gridY; j++){
-                boardInfo[i][j] = new Cell(i,j,true,true,true,true);
+                boardInfo[i][j] = new Cell(i,j);
             }
         }
 
-        // Prepare characters groups
-        peopleGrp   = game.add.group();
-        copsGrp     = game.add.group();
-        aliensGrp   = game.add.group();
+        // Characters group
+        gameGroup = game.add.group();
 
         // Create GUI
         this.drawUI();
@@ -122,11 +120,12 @@ var GameplayState = {
         // Create First Characters
         this.addPeople(firstCell);
 
+        // Reset initial values
         canUseCell          = true;  
         timeFill.tint       = 0xACD372 
     },
 
-    update: function() {
+    update: function() {        
         if(game.input.activePointer.isDown){
             // On first click we take mouse position
             if(!draggin){
@@ -156,11 +155,12 @@ var GameplayState = {
         if(clicked != null) 
             this.addCellOnClick();
 
+        // Set up UI values
         turnText.setText("Turn " + turnNum);
         copText.setText(copCounter+"");
         alienText.setText(alienCounter+"");
         pplText.setText(pplCounter+"");
-        board.update();
+
     },
 
     drag: function(){
@@ -212,14 +212,11 @@ var GameplayState = {
     roomClick: function(e){
         var cellX = Math.trunc(e.x / cellSize);
         var cellY = Math.trunc(e.y / cellSize);
-
         if(roomSelected == null){
             this.resetSelection();
-            roomSelected = e;
-
             // Character recount
-            var ppl;
-            var cop;
+            var ppl = 0;
+            var cop = 0;
             for(var i = 0; i < people.length; i++){
                 if(people[i].cell){
                     if(people[i].cell.x == cellX && people[i].cell.y == cellY && people[i].movements >= 0)
@@ -240,20 +237,27 @@ var GameplayState = {
                     roomSelected = null;
                 } else if(cop > ppl){
                     boardInfo[cellX][cellY].sprite.tint = 0xb6b6ff;
+                    unitSelected = "cop";
                 } else {
                     boardInfo[cellX][cellY].sprite.tint = 0xffb6b6;
+                    unitSelected = "ppl";
                 }
             } else {
                 // Change to the other color
                 switch(boardInfo[cellX][cellY].sprite.tint){
                     case 0xb6b6ff: 
                         boardInfo[cellX][cellY].sprite.tint = 0xffb6b6;
+                        unitSelected = "ppl";
                         break;
                     case 0xffb6b6: 
                         boardInfo[cellX][cellY].sprite.tint = 0xb6b6ff;
+                        unitSelected = "cop";
                         break;
                 }
             }
+            console.log(unitSelected);
+            roomSelected = e;
+
         } else {
             var lastCellX = Math.trunc(roomSelected.x / cellSize);
             var lastCellY = Math.trunc(roomSelected.y / cellSize);
@@ -299,25 +303,55 @@ var GameplayState = {
         var cellToX     = Math.trunc(cellTo.x / cellSize);
         var cellToY     = Math.trunc(cellTo.y / cellSize);
 
-        for(var i = 0; i < people.length; i++){
-            if(people[i].cell){
-                if(people[i].cell.x == cellFromX && people[i].cell.y == cellFromY && people[i].movements >= 0){  
-                    if(cellTo.x > cellFrom.x){
-                        people[i].sprite.animations.play('right');
-                    }
-                    else if(cellTo.x < cellFrom.x){
-                        people[i].sprite.animations.play('left');     
-                    }
+        if(unitSelected == "ppl"){
+            for(var i = 0; i < people.length; i++){
+                if(people[i].cell && people[i].sprite){
+                    if(people[i].cell.x == cellFromX && people[i].cell.y == cellFromY && people[i].movements >= 0){  
+                        if(cellTo.x > cellFrom.x){
+                            people[i].sprite.animations.play('right');
+                        }
+                        else if(cellTo.x < cellFrom.x){
+                            people[i].sprite.animations.play('left');     
+                        }
 
-                    var tween = this.game.add.tween(people[i].sprite).to({x: cellFrom.x + (cellSize / 2) - (people[i].sprite.width / 2), y: cellFrom.y + (cellSize / 2) - (people[i].sprite.height / 2)}, 600, Phaser.Easing.Linear.None)
-                                .to({x: cellTo.x + (cellSize / 2) - (people[i].sprite.width / 2), y: cellTo.y + (cellSize / 2) - (people[i].sprite.height / 2)}, 1200, Phaser.Easing.Linear.None)
-                                .to({x: cellTo.x + game.rnd.integerInRange(20,cellSize - 20 - people[i].sprite.width) , y: cellTo.y + game.rnd.integerInRange(20,cellSize-people[i].sprite.height - 20)}, 600, Phaser.Easing.Linear.None)
-                                .start();
-                    tween.onComplete.add(function(){this.backToIdle(cellToX,cellToY);}, this);
-                }  
+                        var tween = this.game.add.tween(people[i].sprite).to({x: cellFrom.x + (cellSize / 2) - (people[i].sprite.width / 2), y: cellFrom.y + (cellSize / 2) - (people[i].sprite.height / 2)}, 600, Phaser.Easing.Linear.None)
+                                    .to({x: cellTo.x + (cellSize / 2) - (people[i].sprite.width / 2), y: cellTo.y + (cellSize / 2) - (people[i].sprite.height / 2)}, 1200, Phaser.Easing.Linear.None)
+                                    .to({x: cellTo.x + game.rnd.integerInRange(20,cellSize - 20 - people[i].sprite.width) , y: cellTo.y + game.rnd.integerInRange(20,cellSize-people[i].sprite.height - 20)}, 600, Phaser.Easing.Linear.None)
+                                    .start();
+                        tween.onComplete.add(function(){this.backToIdle(cellToX,cellToY);}, this);
+                    }  
+                }
             }
         }
+        else if(unitSelected == "cop"){
+             for(var i = 0; i < cops.length; i++){
+                if(cops[i].cell && cops[i].sprite){
+                    if(cops[i].cell.x == cellFromX && cops[i].cell.y == cellFromY && cops[i].movements >= 0){  
+                        if(cellTo.x > cellFrom.x){
+                            cops[i].sprite.animations.play('right');
+                        }
+                        else if(cellTo.x < cellFrom.x){
+                            cops[i].sprite.animations.play('left');     
+                        }
+
+                        var tween = this.game.add.tween(cops[i].sprite).to({x: cellFrom.x + (cellSize / 2) - (cops[i].sprite.width / 2), y: cellFrom.y + (cellSize / 2) - (cops[i].sprite.height / 2)}, 600, Phaser.Easing.Linear.None)
+                                    .to({x: cellTo.x + (cellSize / 2) - (cops[i].sprite.width / 2), y: cellTo.y + (cellSize / 2) - (cops[i].sprite.height / 2)}, 1200, Phaser.Easing.Linear.None)
+                                    .to({x: cellTo.x + game.rnd.integerInRange(20,cellSize - 20 - cops[i].sprite.width) , y: cellTo.y + game.rnd.integerInRange(20,cellSize-cops[i].sprite.height - 20)}, 600, Phaser.Easing.Linear.None)
+                                    .start();
+                        tween.onComplete.add(function(){this.backToIdle(cellToX,cellToY);}, this);
+                    }  
+                }
+            }
+        }
+        
+        unitSelected = "";
     },
+
+    moveAliens: function(){
+        for(var i = 0; i < aliens.length; i++){
+             
+        }
+    }
 
     backToIdle: function(x,y){
         for(var i = 0; i < people.length; i++){
@@ -327,6 +361,17 @@ var GameplayState = {
                     people[i].cell.x = x;
                     people[i].cell.y = y; 
                     people[i].movements -= 1;       
+                }
+            }
+        }
+
+        for(var i = 0; i < cops.length; i++){
+            if(cops[i].cell){
+                if(cops[i].sprite.animations.currentAnim != "idle"){
+                    cops[i].sprite.animations.play('idle');
+                    cops[i].cell.x = x;
+                    cops[i].cell.y = y; 
+                    cops[i].movements -= 1;       
                 }
             }
         }
@@ -375,15 +420,18 @@ var GameplayState = {
 
                     // Reset character movements
                     for(var i = 0; i < people.length; i++){
-                        people[i].movements = people[i].maxMovements;
+                        if(people[i])
+                            people[i].movements = people[i].maxMovements;
                     }
 
                     for(var i = 0; i < cops.length; i++){
-                        cops[i].movements   = cops[i].maxMovements;
+                        if(cops[i])
+                            cops[i].movements   = cops[i].maxMovements;
                     }
 
                     for(var i = 0; i < aliens.length; i++){
-                        aliens[i].movements = aliens[i].maxMovements;
+                        if(aliens[i])
+                            aliens[i].movements = aliens[i].maxMovements;
                     }
                 } 
             }
@@ -399,6 +447,7 @@ var GameplayState = {
                     boardInfo[i][j].sprite.tint = 0xffffff; 
             }
         }
+        unitSelection = "";
     },
 
     putCell: function(x, y){
@@ -445,16 +494,14 @@ var GameplayState = {
     },
 
     drawUI: function(){
-        timeBar                 = game.add.sprite(137, 9, 'timeBar');
-        timeFill                = game.add.sprite(137, 9, 'timeBar');
-        hud                     = game.add.sprite(0, 0, 'hud');
+        uiGroup                 = game.add.group();
+        timeBar                 = uiGroup.create(137, 9, 'timeBar');
+        timeFill                = uiGroup.create(137, 9, 'timeBar');
+        hud                     = uiGroup.create(0, 0, 'hud');
         turnText                = game.add.bitmapText(25, 8, 'PixelFont','Turn '+ turnNum,16);
         copText                 = game.add.bitmapText(625, 49, 'PixelFont','0',16);
         alienText               = game.add.bitmapText(722, 49, 'PixelFont','0',16);
         pplText                 = game.add.bitmapText(527, 49, 'PixelFont','0',16);
-        copText.align           = 'center';
-        pplText.align           = 'center';
-        alienText.align         = 'center';
         timeBar.fixedToCamera   = true;
         timeFill.fixedToCamera  = true;
         alienText.fixedToCamera = true;
@@ -466,14 +513,16 @@ var GameplayState = {
         timeBar.tint            = 0x232324;
         timeFill.tint           = 0xf0f28b;    
 
-
+        uiGroup.add(turnText);
+        uiGroup.add(copText);
+        uiGroup.add(alienText);
+        uiGroup.add(pplText);
     },
 
     addPeople: function(cell){
-        console.log("Add people");
         var rnd = game.rnd.integerInRange(2,4);
         for(var i = 1; i < rnd; i++){
-            var sprite  = peopleGrp.create((cell.x * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2) , (cell.y * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2), 'pj');
+            var sprite  = game.add.sprite((cell.x * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2) , (cell.y * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2), 'pj');
             var last    = people.push(new Character(sprite, cell));
             people[last - 1].sprite.animations.add('idle',   [0, 1, 2]   ,  5, true);
             people[last - 1].sprite.animations.add('right',  [3, 4, 3, 5], 10, true);
@@ -482,28 +531,28 @@ var GameplayState = {
             people[last - 1].cell.x = cell.x;
             people[last - 1].cell.y = cell.y; 
             pplCounter++;
+            gameGroup.add(sprite);
         }
     },
 
     addAliens: function(cell){
-        console.log("Add aliens");
         var rnd = game.rnd.integerInRange(2,4);
         for(var i = 1; i < rnd; i++){
-            var sprite  = aliensGrp.create((cell.x * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2) , (cell.y * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2), 'alien');
+            var sprite  = game.add.sprite((cell.x * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2) , (cell.y * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2), 'alien');
             var last    = aliens.push(new Character(sprite, cell));
             aliens[last - 1].sprite.animations.add('idle',[0, 1, 2],8,true);
             aliens[last - 1].sprite.animations.play('idle');
             aliens[last - 1].cell.x = cell.x;
             aliens[last - 1].cell.y = cell.y; 
             alienCounter++;
+            gameGroup.add(sprite);
         }
     },
 
     addCops: function(cell){
-        console.log("Add cops");
         var rnd = game.rnd.integerInRange(2,4);
         for(var i = 1; i < rnd; i++){
-            var sprite  = copsGrp.create((cell.x * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2) , (cell.y * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2), 'cop');
+            var sprite  = game.add.sprite((cell.x * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2) , (cell.y * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2), 'cop');
             var last    = cops.push(new Character(sprite, cell));
             cops[last - 1].sprite.animations.add('idle',   [0, 1, 2]   ,  5, true);
             cops[last - 1].sprite.animations.add('right',  [3, 4, 3, 5], 10, true);
@@ -512,6 +561,7 @@ var GameplayState = {
             cops[last - 1].cell.x = cell.x;
             cops[last - 1].cell.y = cell.y; 
             copCounter++;
+            gameGroup.add(sprite);
         }
     },
 };
