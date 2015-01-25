@@ -268,11 +268,14 @@ var GameplayState = {
     roomClick: function(e){
         var cellX = Math.trunc(e.x / cellSize);
         var cellY = Math.trunc(e.y / cellSize);
+
+        console.log("Click on " + cellX + "," + cellY);
         if(roomSelected == null){
             //this.resetSelection();
             // Character recount
             var ppl = 0;
             var cop = 0;
+            roomSelected = e;
             for(var i = 0; i < people.length; i++){
                 if(people[i].cell && people[i].sprite.alive){
                     if(people[i].x == cellX && people[i].y == cellY && people[i].movements >= 0)
@@ -285,6 +288,9 @@ var GameplayState = {
                         cop++;       
                 }
             }
+
+            console.log(ppl + " persons on " + cellX + "," + cellY);
+            console.log(cop + " cops on " + cellX + "," + cellY);
 
             // Change color logic
             if(boardInfo[cellX][cellY].sprite.tint == 0xffffff){
@@ -311,8 +317,6 @@ var GameplayState = {
                         break;
                 }
             }
-            roomSelected = e;
-
         } else {
             var lastCellX = Math.trunc(roomSelected.x / cellSize);
             var lastCellY = Math.trunc(roomSelected.y / cellSize);
@@ -515,7 +519,7 @@ var GameplayState = {
                     if(roomSelected != null)
                         this.resetSelection();
                     var newCell = this.putCell(clicked.x, clicked.y);
-
+                    console.log("New cell at " + newCell.x + "," + newCell.y);
                     // Let's summon some things  
                     var rand = game.rnd.integerInRange(0,101);
 
@@ -679,6 +683,7 @@ var GameplayState = {
     },
 
     addCops: function(cell){
+        console.log("Adding cop at " + cell.x + "," + cell.y);
         var rnd = game.rnd.integerInRange(2,4);
         for(var i = 1; i < rnd; i++){
             var sprite  = game.add.sprite((cell.x * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2) , (cell.y * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2), 'cop');
