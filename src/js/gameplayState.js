@@ -13,7 +13,6 @@ var maxCells        = 30;
 var canUseCell      = true;
 var turnNum         = 0;
 var clicked;
-var unitSelection;
 
 // Camera and drag variables
 var dragX           = -1;
@@ -49,18 +48,15 @@ var GameplayState = {
     preload: function() { 
         // Preload all assets
         game.stage.backgroundColor = '#000000';
-        game.load.image('grid'      , 'assets/grid.png'); 
-        game.load.image('room1'     , 'assets/room1.png');
-
-        game.load.image('timeBar'   , 'assets/gui/timeBar.png');
-        game.load.image('hud'       , 'assets/gui/hud.png');
-        game.load.image('bg'        , 'assets/background.png');
-
-        game.load.spritesheet("pj"      , 'assets/nino1_spritesheet.png', 23, 40, 9);
-        game.load.spritesheet("cop"     , 'assets/police_spritesheet.png', 23, 40, 9);
-        game.load.spritesheet("alien"   , 'assets/alien.png', 27, 51, 3);
-
-        game.load.bitmapFont('PixelFont','assets/font/font.png', 'assets/font/font.fnt');
+        game.load.image('grid'              , 'assets/grid.png'); 
+        game.load.image('room1'             , 'assets/room1.png');
+        game.load.image('timeBar'           , 'assets/gui/timeBar.png');
+        game.load.image('hud'               , 'assets/gui/hud.png');
+        game.load.image('bg'                , 'assets/background.png');
+        game.load.spritesheet("pj"          , 'assets/nino1_spritesheet.png', 23, 40, 9);
+        game.load.spritesheet("cop"         , 'assets/police_spritesheet.png', 23, 40, 9);
+        game.load.spritesheet("alien"       , 'assets/alien.png', 27, 51, 3);
+        game.load.bitmapFont('PixelFont'    ,'assets/font/font.png', 'assets/font/font.fnt');
     },
 
     create: function() {
@@ -244,21 +240,17 @@ var GameplayState = {
                     roomSelected = null;
                 } else if(cop > ppl){
                     boardInfo[cellX][cellY].sprite.tint = 0xb6b6ff;
-                    unitSelection = "cop";
                 } else {
                     boardInfo[cellX][cellY].sprite.tint = 0xffb6b6;
-                    unitSelection = "ppl";
                 }
             } else {
                 // Change to the other color
                 switch(boardInfo[cellX][cellY].sprite.tint){
                     case 0xb6b6ff: 
                         boardInfo[cellX][cellY].sprite.tint = 0xffb6b6;
-                        unitSelection = "ppl";
                         break;
                     case 0xffb6b6: 
                         boardInfo[cellX][cellY].sprite.tint = 0xb6b6ff;
-                        unitSelection = "cop";
                         break;
                 }
             }
@@ -368,15 +360,15 @@ var GameplayState = {
                     // Let's summon some things  
                     var rand = game.rnd.integerInRange(0,101);
 
-                    if(rand < 30){
+                    if(rand < 25){
                         // Tripulants!
                         this.addPeople(newCell);
                     }
-                    else if (rand < 50){
+                    else if (rand < 55){
                         // Cops!
                         this.addCops(newCell);
                     }
-                    else if (rand < 70){
+                    else if (rand < 85){
                         // Aliens!
                         this.addAliens(newCell);
                     }
@@ -403,7 +395,8 @@ var GameplayState = {
         roomSelected    = null;
         for(var i = 0; i < gridX; i++){
             for(var j = 0; j < gridY; j++){
-                boardInfo[i][j].sprite.tint = 0xffffff; 
+                if(boardInfo[i][j].sprite)
+                    boardInfo[i][j].sprite.tint = 0xffffff; 
             }
         }
     },
