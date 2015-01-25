@@ -59,6 +59,7 @@ var GameplayState = {
         game.load.spritesheet("alien"       , 'assets/sprites/alien.png', 27, 51, 3);
         game.load.bitmapFont('PixelFont'    , 'assets/font/font.png', 'assets/font/font.fnt');
         game.load.audio('metalClip'         , 'assets/sounds/metalClick.ogg');
+        this.restartGame();
     },
 
     create: function() {
@@ -132,7 +133,8 @@ var GameplayState = {
         timeFill.tint       = 0xACD372 
     },
 
-    update: function() {        
+    update: function() {
+
         if(game.input.activePointer.isDown){
             // On first click we take mouse position
             if(!draggin){
@@ -176,6 +178,8 @@ var GameplayState = {
                 this.moveAliens();
             }
         }
+
+        this.checkEndOfGame();
     },
 
     drag: function(){
@@ -635,4 +639,63 @@ var GameplayState = {
             gameGroup.add(sprite);
         }
     },
+
+    restartGame: function(){
+        
+        grid            = null;
+        gridInfo        = null;
+        gridOffset      = 50;
+        gridX           = 10;
+        gridY           = 8;
+        cellSize        = 192;
+
+    // Board variables
+        board           = null;
+        boardInfo       = null;
+        maxCells        = 30;
+        canUseCell      = true;
+        turnNum         = 0;
+        clicked         = null;
+        unitSelected    = "";
+
+    // Camera and drag variables
+        dragX           = -1;
+        dragY           = -1;
+        draggin         = false;
+        cameraSpeed     = 15
+
+    // GUI variables
+        turnTime        = 2500;
+        turnElapsedTime = 99999;
+        timeBar         = null;
+        timeFill        = null;
+        turnText        = null;
+        copText         = null;
+        alienText       = null;
+        pplText         = null;
+        hud             = null;
+        pplCounter      = 0;
+        copCounter      = 0;
+        alienCounter    = 0;
+        uiGroup         = null;
+
+    // Characters variables
+        people      = [];
+        cops        = [];
+        aliens      = [];
+        roomSelected = null;
+        gameGroup = null;
+        aliensTimer = 500;
+    },
+
+    checkEndOfGame: function(){
+        
+        if(turnNum==10){
+            gameWinned=true;
+            changeState('EndOfGame');
+        }else if (pplCounter==0 && alienCounter>0){
+            gameWinned=false;
+            changeState('EndOfGame');
+        }       
+    }
 };
