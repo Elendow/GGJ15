@@ -409,7 +409,7 @@ var GameplayState = {
 
                         var tween = this.game.add.tween(aliens[i].sprite).to({x: (cellFrom.x * cellSize + gridOffset) + (cellSize / 2) - (aliens[i].sprite.width / 2), y: (cellFrom.y * cellSize + gridOffset) + (cellSize / 2) - (aliens[i].sprite.height / 2)}, 600, Phaser.Easing.Linear.None)
                                             .to({x: (cellTo.x * cellSize + gridOffset) + (cellSize / 2) - (aliens[i].sprite.width / 2), y: (cellTo.y * cellSize + gridOffset) + (cellSize / 2) - (aliens[i].sprite.height / 2)}, 1200, Phaser.Easing.Linear.None)
-                                            .to({x: (cellTo.x * cellSize + gridOffset) + game.rnd.integerInRange(20,cellSize - 20 - (aliens[i].sprite.width / 2)) , y: (cellTo.y * cellSize + gridOffset) + game.rnd.integerInRange(20,cellSize-(aliens[i].sprite.height / 2))}, 600, Phaser.Easing.Linear.None)
+                                            .to({x: (cellTo.x * cellSize + gridOffset) + game.rnd.integerInRange(20,cellSize - 50) , y: (cellTo.y * cellSize + gridOffset) + game.rnd.integerInRange(20,50)}, 600, Phaser.Easing.Linear.None)
                                             .start();
                     }
                 }
