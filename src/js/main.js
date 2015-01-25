@@ -8,5 +8,6 @@ function changeState(state) {
 
 game.state.add('MainMenu', MainMenuState);  
 game.state.add('Gameplay', GameplayState);  
+game.state.add('EndOfGame', EndOfGameState); 
 
 game.state.start('MainMenu'); 
