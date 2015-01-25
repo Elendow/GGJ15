@@ -37,9 +37,9 @@ var alienCounter    = 0;
 var uiGroup;
 
 // Characters variables
-var people      = [100];
-var cops        = [100];
-var aliens      = [100];
+var people      = [];
+var cops        = [];
+var aliens      = [];
 var roomSelected;
 var gameGroup;
 var aliensTimer = 500;
@@ -176,12 +176,13 @@ var GameplayState = {
         pplText.setText(pplCounter+"");
 
         // Aliens IA
-        aliensTimer -= game.time.elapsed;
-        if(aliensTimer <= 0){
-            aliensTimer = game.rnd.integerInRange(200,600);
-            this.moveAliens();
+        if(aliens.length > 0){
+            aliensTimer -= game.time.elapsed;
+            if(aliensTimer <= 0){
+                aliensTimer = game.rnd.integerInRange(1000,2000);
+                this.moveAliens();
+            }
         }
-
     },
 
     drag: function(){
@@ -369,28 +370,33 @@ var GameplayState = {
     },
 
     moveAliens: function(){
+        var cellFrom;
+        var cellX;
+        var cellY;
+        var cellTo;
+        var possibleCells = [];
         for(var i = 0; i < aliens.length; i++){
-            if(aliens[i].sprite && aliens[i].cell){
+            if(aliens[i].sprite !== null){
                 if(aliens[i].movements >= 0){
-                    var cellFrom = aliens[i].cell;
-                    var cellX   = aliens[i].x;
-                    var cellY   = aliens[i].y;
-
-                    var possibleCells = [];
+                    cellFrom        = aliens[i].cell;
+                    cellX           = aliens[i].x;
+                    cellY           = aliens[i].y;
+                    possibleCells   = [];
 
                     for(i = cellX - 1; i < cellX + 2; i++){
                         for(j = cellY - 1; j < cellY + 2; j++){
-                            if(!(i == cellX && j == cellY) && !(i != cellX && j != cellY)){
-                                if(boardInfo[i][j].used){
-                                    possibleCells.push(boardInfo[i][j].sprite);
+                            if(i > 0 && j > 0 && i < gridX && j < gridY){
+                                if(!(i == cellX && j == cellY) && !(i != cellX && j != cellY)){
+                                    if(boardInfo[i][j].used){
+                                        cellTo = boardInfo[i][j];
+                                        possibleCells.push(boardInfo[i][j]);
+                                    }
                                 }
                             }
                         }
                     }
 
                     var cellTo  = possibleCells[game.rnd.integerInRange(0,possibleCells.length - 1)];
-                    aliens[i].x = cellTo.x;
-                    aliens[i].y = cellTo.y;
                     aliens[i].sprite.angle = 0;
 
                     if(cellTo.x > cellFrom.x){
@@ -500,7 +506,7 @@ var GameplayState = {
     },
 
     resetSelection: function(){
-        roomSelected    = null;
+        roomSelected = null;
         for(var i = 0; i < gridX; i++){
             for(var j = 0; j < gridY; j++){
                 if(boardInfo[i][j].sprite)
@@ -543,7 +549,7 @@ var GameplayState = {
                                 if(!(i == x && j == y) && !(i != x && j != y)){
                                     if(!boardInfo[i][j].used){
                                         // This cell is fucking available 
-                                        gridInfo[i][j].sprite.tint   = 0xFFF467;
+                                        gridInfo[i][j].sprite.tint = 0xFFF467;
                                     }
                                 }
                             }
@@ -584,7 +590,7 @@ var GameplayState = {
         var rnd = game.rnd.integerInRange(2,4);
         for(var i = 1; i < rnd; i++){
             var sprite  = game.add.sprite((cell.x * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2) , (cell.y * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2), 'pj');
-            var last    = people.push(new Character());
+            var last    = people.push(new Character(sprite));
             people[last - 1].sprite = sprite;
             people[last - 1].sprite.animations.add('idle',   [0, 1, 2]   ,  5, true);
             people[last - 1].sprite.animations.add('right',  [3, 4, 3, 5], 10, true);
@@ -602,7 +608,7 @@ var GameplayState = {
         var rnd = game.rnd.integerInRange(3,5);
         for(var i = 1; i < rnd; i++){
             var sprite  = game.add.sprite((cell.x * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2) , (cell.y * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2), 'alien');
-            var last    = aliens.push(new Character());
+            var last    = aliens.push(new Character(sprite));
             aliens[last - 1].sprite = sprite;
             aliens[last - 1].sprite.animations.add('idle',[0, 1, 2],8,true);
             aliens[last - 1].sprite.animations.play('idle');
@@ -618,7 +624,7 @@ var GameplayState = {
         var rnd = game.rnd.integerInRange(2,4);
         for(var i = 1; i < rnd; i++){
             var sprite  = game.add.sprite((cell.x * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2) , (cell.y * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2), 'cop');
-            var last    = cops.push(new Character());
+            var last    = cops.push(new Character(sprite));
             cops[last - 1].sprite = sprite;
             cops[last - 1].sprite.animations.add('idle',   [0, 1, 2]   ,  5, true);
             cops[last - 1].sprite.animations.add('right',  [3, 4, 3, 5], 10, true);
