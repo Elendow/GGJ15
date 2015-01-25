@@ -27,7 +27,13 @@ var turnElapsedTime = 99999;
 var timeBar;
 var timeFill;
 var turnText;
+var copText;
+var alienText;
+var pplText;
 var hud;
+var pplCounter      = 0;
+var copCounter      = 0;
+var alienCounter    = 0;
 
 // Chacaters variables
 var people      = [100];
@@ -155,7 +161,9 @@ var GameplayState = {
             this.addCellOnClick();
 
         turnText.setText("Turn " + turnNum);
-
+        copText.setText(copCounter+"");
+        alienText.setText(alienCounter+"");
+        pplText.setText(pplCounter+"");
         board.update();
     },
 
@@ -439,17 +447,28 @@ var GameplayState = {
     },
 
     drawUI: function(){
-        timeBar                 = game.add.sprite(56, 3, 'timeBar');
-        timeFill                = game.add.sprite(56, 3, 'timeBar');
+        timeBar                 = game.add.sprite(137, 9, 'timeBar');
+        timeFill                = game.add.sprite(137, 9, 'timeBar');
         hud                     = game.add.sprite(0, 0, 'hud');
-        turnText                = game.add.bitmapText(80, 6, 'PixelFont','Turn '+ turnNum,13);
+        turnText                = game.add.bitmapText(25, 8, 'PixelFont','Turn '+ turnNum,16);
+        copText                 = game.add.bitmapText(625, 49, 'PixelFont','0',16);
+        alienText               = game.add.bitmapText(722, 49, 'PixelFont','0',16);
+        pplText                 = game.add.bitmapText(527, 49, 'PixelFont','0',16);
+        copText.align           = 'center';
+        pplText.align           = 'center';
+        alienText.align         = 'center';
         timeBar.fixedToCamera   = true;
         timeFill.fixedToCamera  = true;
+        alienText.fixedToCamera = true;
+        pplText.fixedToCamera   = true;
+        copText.fixedToCamera   = true;
         hud.fixedToCamera       = true;
         bg.fixedToCamera        = true;
         turnText.fixedToCamera  = true;
         timeBar.tint            = 0x232324;
-        timeFill.tint           = 0xf0f28b;        
+        timeFill.tint           = 0xf0f28b;    
+
+
     },
 
     addPeople: function(cell){
@@ -464,6 +483,7 @@ var GameplayState = {
             people[last - 1].sprite.animations.play('idle');
             people[last - 1].cell.x = cell.x;
             people[last - 1].cell.y = cell.y; 
+            pplCounter++;
         }
     },
 
