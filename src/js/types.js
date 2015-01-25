@@ -9,9 +9,11 @@ function GridCell (id){
 	this.sprite		= null;
 }
 
-function Character (sprite, cell){
-	this.sprite 		= sprite;
-	this.cell 			= cell;
+function Character (){
+	this.sprite 		= null;
+	this.cell 			= null;
+	this.x				= -1;
+	this.y				= -1;
 	this.movements 		= 3;
 	this.maxMovements 	= this.movements;
 }
