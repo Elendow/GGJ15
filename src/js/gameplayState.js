@@ -218,6 +218,7 @@ var GameplayState = {
         var cellY = Math.trunc(e.y / cellSize);
 
         if(roomSelected == null){
+            this.resetSelection();
             roomSelected = e;
 
             // Character recount
@@ -367,15 +368,17 @@ var GameplayState = {
                     // Let's summon some things  
                     var rand = game.rnd.integerInRange(0,101);
 
-                    if(rand < 50){
+                    if(rand < 30){
                         // Tripulants!
                         this.addPeople(newCell);
                     }
-                    else if (rand < 40){
+                    else if (rand < 50){
                         // Cops!
+                        this.addCops(newCell);
                     }
-                    else if (rand < 60){
+                    else if (rand < 70){
                         // Aliens!
+                        this.addAliens(newCell);
                     }
 
                     // Reset character movements
@@ -397,10 +400,12 @@ var GameplayState = {
     },
 
     resetSelection: function(){
-        var cellX       = Math.trunc(roomSelected.x/cellSize);
-        var cellY       = Math.trunc(roomSelected.y/cellSize);
         roomSelected    = null;
-        boardInfo[cellX][cellY].sprite.tint = 0xffffff; 
+        for(var i = 0; i < gridX; i++){
+            for(var j = 0; j < gridY; j++){
+                boardInfo[i][j].sprite.tint = 0xffffff; 
+            }
+        }
     },
 
     putCell: function(x, y){
@@ -476,7 +481,7 @@ var GameplayState = {
         var rnd = game.rnd.integerInRange(2,4);
         for(var i = 1; i < rnd; i++){
             var sprite  = peopleGrp.create((cell.x * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2) , (cell.y * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2), 'pj');
-            var last    = people.push(new Person(sprite, cell));
+            var last    = people.push(new Character(sprite, cell));
             people[last - 1].sprite.animations.add('idle',   [0, 1, 2]   ,  5, true);
             people[last - 1].sprite.animations.add('right',  [3, 4, 3, 5], 10, true);
             people[last - 1].sprite.animations.add('left',   [6, 7, 6, 8], 10, true);
@@ -488,10 +493,32 @@ var GameplayState = {
     },
 
     addAliens: function(cell){
-
+        console.log("Add aliens");
+        var rnd = game.rnd.integerInRange(2,4);
+        for(var i = 1; i < rnd; i++){
+            var sprite  = aliensGrp.create((cell.x * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2) , (cell.y * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2), 'alien');
+            var last    = aliens.push(new Character(sprite, cell));
+            aliens[last - 1].sprite.animations.add('idle',[0, 1, 2],8,true);
+            aliens[last - 1].sprite.animations.play('idle');
+            aliens[last - 1].cell.x = cell.x;
+            aliens[last - 1].cell.y = cell.y; 
+            alienCounter++;
+        }
     },
 
     addCops: function(cell){
-
+        console.log("Add cops");
+        var rnd = game.rnd.integerInRange(2,4);
+        for(var i = 1; i < rnd; i++){
+            var sprite  = copsGrp.create((cell.x * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2) , (cell.y * cellSize) + (cellSize / 2) + (64 + game.rnd.integerInRange(-64,64) / 2), 'cop');
+            var last    = cops.push(new Character(sprite, cell));
+            cops[last - 1].sprite.animations.add('idle',   [0, 1, 2]   ,  5, true);
+            cops[last - 1].sprite.animations.add('right',  [3, 4, 3, 5], 10, true);
+            cops[last - 1].sprite.animations.add('left',   [6, 7, 6, 8], 10, true);
+            cops[last - 1].sprite.animations.play('idle');
+            cops[last - 1].cell.x = cell.x;
+            cops[last - 1].cell.y = cell.y; 
+            copCounter++;
+        }
     },
 };

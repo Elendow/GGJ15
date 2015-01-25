@@ -13,23 +13,9 @@ function GridCell (id){
 	this.sprite		= null;
 }
 
-function Person (sprite, cell){
+function Character (sprite, cell){
 	this.sprite 		= sprite;
 	this.cell 			= cell;
-	this.movements 		= 3;
-	this.maxMovements 	= this.movements;
-}
-
-function Cop (damage, sprite){
-	this.sprite 		= sprite;
-	this.damage 		= damage;
-	this.movements 		= 3;
-	this.maxMovements 	= this.movements;
-}
-
-function Alien (damage, sprite){
-	this.sprite 		= sprite;
-	this.damage 		= damage;
 	this.movements 		= 3;
 	this.maxMovements 	= this.movements;
 }
